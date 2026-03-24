@@ -1,11 +1,11 @@
-import bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid'; // npm install uuid
-import postgres from 'postgres';
-import { invoices, customers, revenue, users } from '../lib/placeholder-data';
+import bcrypt from "bcrypt";
+import { v4 as uuidv4 } from "uuid"; // npm install uuid
+import postgres from "postgres";
+import { invoices, customers, revenue, users } from "../lib/placeholder-data";
 
-const sql = postgres(process.env.POSTGRES_URL!, { 
-  ssl: 'require',
-  transform: { undefined: null }
+const sql = postgres(process.env.POSTGRES_URL!, {
+  ssl: "require",
+  transform: { undefined: null },
 });
 
 export async function GET() {
@@ -24,7 +24,7 @@ export async function GET() {
       `;
 
       for (const user of users) {
-        const hashedPassword = await bcrypt.hash(user.password || '123456', 10);
+        const hashedPassword = await bcrypt.hash(user.password || "123456", 10);
         await tx`
           INSERT INTO users (id, name, email, password)
           VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
@@ -62,7 +62,7 @@ export async function GET() {
       `;
 
       for (const invoice of invoices) {
-        const invoiceId = invoice.id || uuidv4(); // Generate ID if missing
+        const invoiceId = uuidv4(); // Generate new ID for each invoice
         await tx`
           INSERT INTO invoices (id, customer_id, amount, status, date)
           VALUES (${invoiceId}, ${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
@@ -86,15 +86,18 @@ export async function GET() {
         `;
       }
 
-      return 'Database seeded successfully';
+      return "Database seeded successfully";
     });
 
     return Response.json({ message: result });
-  } catch (error:any) {
-    console.error('Seeding failed:', error);
-    return Response.json({ 
-      error: error.message,
-      code: error.code 
-    }, { status: 500 });
+  } catch (error: any) {
+    console.error("Seeding failed:", error);
+    return Response.json(
+      {
+        error: error.message,
+        code: error.code,
+      },
+      { status: 500 },
+    );
   }
 }
